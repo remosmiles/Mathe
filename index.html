@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stellas Mathe-Abenteuer</title>
+    <!-- Diese Zeile lädt die Konfetti-Animation aus dem Internet -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
@@ -35,7 +37,7 @@
         }
 
         h2 {
-            color: #9370db; /* Helles Lila */
+            color: #9370db;
             margin-top: 0;
             font-size: 22px;
         }
@@ -83,10 +85,9 @@
             justify-content: center;
         }
 
-        /* Styling für die Fehlerliste */
         #mistakes-container {
             margin-top: 30px;
-            background: #fff3cd; /* Leichtes Gelb */
+            background: #fff3cd; 
             padding: 20px;
             border-radius: 15px;
             text-align: left;
@@ -160,21 +161,28 @@
 
     <script>
         let currentProblem = null;
-        let mistakes = {}; // Speichert die falschen Rechnungen
+        let mistakes = {}; 
+
+        function triggerConfetti() {
+            // Ein schöner, breiter Konfetti-Ausbruch von der Mitte aus
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#ff69b4', '#9370db', '#ffd700', '#00ff00', '#00ffff']
+            });
+        }
 
         function generateProblem() {
             let mistakeKeys = Object.keys(mistakes);
             
-            // Zu 40% Chance eine Rechnung aus der Fehlerliste nehmen, falls es welche gibt
             if (mistakeKeys.length > 0 && Math.random() < 0.4) {
-                // Wähle eine zufällige Problem-Rechnung
                 let randomKey = mistakeKeys[Math.floor(Math.random() * mistakeKeys.length)];
                 currentProblem = {
                     text: randomKey,
                     answer: mistakes[randomKey].answer
                 };
             } else {
-                // Normale, neue Rechnung generieren
                 const isPlus = Math.random() > 0.5;
                 let a, b, ans;
                 
@@ -201,7 +209,6 @@
             const list = document.getElementById('mistakes-list');
             list.innerHTML = '';
             
-            // Rechnungen nach Anzahl der Fehler sortieren (häufigste zuerst)
             let sortedMistakes = Object.keys(mistakes).sort((k1, k2) => mistakes[k2].count - mistakes[k1].count);
             
             if(sortedMistakes.length === 0) {
@@ -224,15 +231,21 @@
             const feedback = document.getElementById('feedback');
 
             if (userAnswer === currentProblem.answer) {
-                // RICHTIG!
+                // Merken, wie viele Fehler vor der richtigen Antwort in der Liste waren
+                let mistakeCountBefore = Object.keys(mistakes).length;
                 
-                // Wenn die Rechnung in der Fehlerliste war, einen "Fehlerpunkt" abziehen
                 if (mistakes[currentProblem.text]) {
                     mistakes[currentProblem.text].count--;
                     if (mistakes[currentProblem.text].count <= 0) {
-                        delete mistakes[currentProblem.text]; // Ganz aus der Liste löschen
+                        delete mistakes[currentProblem.text]; 
                     }
                     updateMistakesUI();
+                }
+
+                // Prüfen, ob die Liste genau jetzt leer geworden ist
+                let mistakeCountAfter = Object.keys(mistakes).length;
+                if (mistakeCountBefore > 0 && mistakeCountAfter === 0) {
+                    triggerConfetti();
                 }
 
                 const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻'];
@@ -241,9 +254,6 @@
                 
                 setTimeout(generateProblem, 2000); 
             } else {
-                // FALSCH!
-                
-                // Zur Fehlerliste hinzufügen oder Zähler erhöhen
                 if (!mistakes[currentProblem.text]) {
                     mistakes[currentProblem.text] = { answer: currentProblem.answer, count: 1 };
                 } else {
