@@ -122,7 +122,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* NEU: Das große Katzen-Overlay */
         #cat-overlay {
             position: fixed;
             top: 0;
@@ -213,7 +212,6 @@
 </head>
 <body>
 
-    <!-- NEU: Das Element für die große Katze -->
     <div id="cat-overlay"></div>
 
     <div id="game-container">
@@ -240,9 +238,15 @@
         let correctCount = 0; 
         let incorrectCount = 0; 
 
-        // Passe hier die Endungen an (.jpg oder .png), je nachdem was du genau gespeichert hast
         const correctCats = ['Katze1.jpg', 'Katze3.png', 'Katze4.png', 'Katze5.png'];
         const incorrectCats = ['Katze2.png', 'Katze6.png', 'Katze7.png'];
+
+        // PRELOADER: Lädt die Bilder unsichtbar vor, damit sie auf dem Handy sofort da sind
+        const allCatsToPreload = correctCats.concat(incorrectCats);
+        allCatsToPreload.forEach(imageSrc => {
+            const img = new Image();
+            img.src = imageSrc;
+        });
 
         function triggerConfetti() {
             var duration = 3 * 1000;
@@ -325,13 +329,13 @@
             const randomCat = catList[Math.floor(Math.random() * catList.length)];
             const overlay = document.getElementById('cat-overlay');
             overlay.innerHTML = `<img src="${randomCat}" alt="Riesige Belohnungs-Katze">`;
-            overlay.style.display = 'flex'; // Overlay anzeigen
+            overlay.style.display = 'flex'; 
             
-            // Versteckt das Overlay automatisch nach 2 Sekunden (wenn die neue Aufgabe kommt)
+            // Auf 4 Sekunden (4000 Millisekunden) erhöht
             setTimeout(() => {
                 overlay.style.display = 'none';
                 overlay.innerHTML = '';
-            }, 2000);
+            }, 4000);
         }
 
         function checkAnswer() {
@@ -344,9 +348,11 @@
 
             if (userAnswer === currentProblem.answer) {
                 correctCount++; 
+                let delayForNextQuestion = 2000;
                 
                 if (correctCount % 5 === 0) {
                     showBigCatImage(correctCats);
+                    delayForNextQuestion = 4000; // Wenn eine Katze gezeigt wird, 4 Sekunden warten
                 } else {
                     const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻', '✨🪄✨'];
                     const randomFeedback = catsAndApplause[Math.floor(Math.random() * catsAndApplause.length)];
@@ -368,12 +374,14 @@
                     triggerConfetti();
                 }
 
-                setTimeout(generateProblem, 2000); 
+                setTimeout(generateProblem, delayForNextQuestion); 
             } else {
                 incorrectCount++; 
+                let isCatShown = false;
                 
                 if (incorrectCount % 3 === 0) {
                     showBigCatImage(incorrectCats);
+                    isCatShown = true;
                 } else {
                     feedback.innerHTML = '❌'; 
                 }
@@ -394,9 +402,9 @@
                     }
                 }, 500); 
                 
-                // Falls ein Overlay gezeigt wurde, wird nach 2 Sekunden die nächste Aufgabe erzwungen
-                if (incorrectCount % 3 === 0) {
-                    setTimeout(generateProblem, 2000);
+                if (isCatShown) {
+                    // Wenn eine Fehler-Katze gezeigt wird, 4 Sekunden warten, bevor die nächste Aufgabe kommt
+                    setTimeout(generateProblem, 4000);
                 } else {
                     document.getElementById('answer').value = '';
                     document.getElementById('answer').focus();
