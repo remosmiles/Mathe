@@ -59,30 +59,19 @@
             outline: none;
         }
 
-        button {
-            font-size: 28px;
-            background-color: #ff69b4;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 15px;
-            cursor: pointer;
-            margin-top: 25px;
-            font-weight: bold;
-            transition: transform 0.1s;
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
         #feedback {
             font-size: 70px;
-            height: 90px;
+            height: 120px; /* Höhe erhöht für Bilder */
             margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        /* Neue Klasse für Katzenbilder */
+        .feedback-cat-image {
+            max-height: 100px;
+            border-radius: 10px;
         }
 
         #mistakes-container {
@@ -148,7 +137,6 @@
         <div id="question"></div>
         <input type="number" id="answer" autocomplete="off" autofocus>
         <br>
-        <button onclick="checkAnswer()">Prüfen!</button>
         <div id="feedback"></div>
 
         <div id="mistakes-container">
@@ -162,9 +150,14 @@
     <script>
         let currentProblem = null;
         let mistakes = {}; 
+        let correctCount = 0; // Zähler für richtige Antworten
+        let incorrectCount = 0; // Zähler für falsche Antworten
+
+        // Bildlisten (Pfade anpassen!)
+        const correctCats = ['Katze1.png', 'Katze3.png', 'Katze4.png', 'Katze5.png'];
+        const incorrectCats = ['Katze2.png', 'Katze6.png', 'Katze7.png'];
 
         function triggerConfetti() {
-            // Ein schöner, breiter Konfetti-Ausbruch von der Mitte aus
             confetti({
                 particleCount: 150,
                 spread: 100,
@@ -222,6 +215,13 @@
             }
         }
 
+        function showCatImage(catList) {
+            // Wählt zufällig ein Bild aus der übergebenen Liste
+            const randomCat = catList[Math.floor(Math.random() * catList.length)];
+            const imgHtml = `<img src="${randomCat}" class="feedback-cat-image" alt="Belohnungs-Katze">`;
+            document.getElementById('feedback').innerHTML = imgHtml;
+        }
+
         function checkAnswer() {
             const answerInput = document.getElementById('answer').value;
             if(answerInput === '') return; 
@@ -231,7 +231,18 @@
             const feedback = document.getElementById('feedback');
 
             if (userAnswer === currentProblem.answer) {
-                // Merken, wie viele Fehler vor der richtigen Antwort in der Liste waren
+                correctCount++; // Zähler erhöhen
+                
+                // Prüfen auf jede 5. richtige Antwort
+                if (correctCount % 5 === 0) {
+                    showCatImage(correctCats);
+                } else {
+                    // Standard-Feedback (Emojis)
+                    const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻'];
+                    const randomFeedback = catsAndApplause[Math.floor(Math.random() * catsAndApplause.length)];
+                    feedback.innerHTML = randomFeedback;
+                }
+                
                 let mistakeCountBefore = Object.keys(mistakes).length;
                 
                 if (mistakes[currentProblem.text]) {
@@ -242,18 +253,23 @@
                     updateMistakesUI();
                 }
 
-                // Prüfen, ob die Liste genau jetzt leer geworden ist
                 let mistakeCountAfter = Object.keys(mistakes).length;
                 if (mistakeCountBefore > 0 && mistakeCountAfter === 0) {
                     triggerConfetti();
                 }
 
-                const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻'];
-                const randomFeedback = catsAndApplause[Math.floor(Math.random() * catsAndApplause.length)];
-                feedback.innerHTML = randomFeedback;
-                
                 setTimeout(generateProblem, 2000); 
             } else {
+                incorrectCount++; // Zähler erhöhen
+                
+                // Prüfen auf jede 3. falsche Antwort
+                if (incorrectCount % 3 === 0) {
+                    showCatImage(incorrectCats);
+                } else {
+                    // Standard-Fehler-Feedback
+                    feedback.innerHTML = '❌'; 
+                }
+                
                 if (!mistakes[currentProblem.text]) {
                     mistakes[currentProblem.text] = { answer: currentProblem.answer, count: 1 };
                 } else {
@@ -262,7 +278,6 @@
                 updateMistakesUI();
 
                 body.classList.add('shake-red');
-                feedback.innerHTML = '❌'; 
                 
                 setTimeout(() => {
                     body.classList.remove('shake-red');
