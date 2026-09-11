@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellas Mathe-Abenteuer</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        #game-container {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #ff69b4; 
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            color: #9370db; /* Helles Lila */
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        #question {
+            font-size: 55px;
+            margin: 20px 0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input {
+            font-size: 40px;
+            width: 120px;
+            text-align: center;
+            border: 4px solid #ff69b4;
+            border-radius: 15px;
+            padding: 10px;
+            outline: none;
+        }
+
+        button {
+            font-size: 28px;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #feedback {
+            font-size: 70px;
+            height: 90px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Styling für die Fehlerliste */
+        #mistakes-container {
+            margin-top: 30px;
+            background: #fff3cd; /* Leichtes Gelb */
+            padding: 20px;
+            border-radius: 15px;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        #mistakes-container h3 {
+            margin-top: 0;
+            color: #856404;
+            font-size: 18px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            font-size: 18px;
+            color: #333;
+            padding: 5px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .shake-red {
+            animation: shake 0.5s;
+            background-color: #ffcccc !important; 
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Mathe-Profi! 🐱</h1>
+        <h2>Hallo Stella! 🌟 Viel Spaß beim Rechnen!</h2>
+        
+        <div id="question"></div>
+        <input type="number" id="answer" autocomplete="off" autofocus>
+        <br>
+        <button onclick="checkAnswer()">Prüfen!</button>
+        <div id="feedback"></div>
+
+        <div id="mistakes-container">
+            <h3>Deine Trainings-Liste 🏋️‍♀️</h3>
+            <ul id="mistakes-list">
+                <li>Alles super! Keine Fehler bisher. 🥳</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentProblem = null;
+        let mistakes = {}; // Speichert die falschen Rechnungen
+
+        function generateProblem() {
+            let mistakeKeys = Object.keys(mistakes);
+            
+            // Zu 40% Chance eine Rechnung aus der Fehlerliste nehmen, falls es welche gibt
+            if (mistakeKeys.length > 0 && Math.random() < 0.4) {
+                // Wähle eine zufällige Problem-Rechnung
+                let randomKey = mistakeKeys[Math.floor(Math.random() * mistakeKeys.length)];
+                currentProblem = {
+                    text: randomKey,
+                    answer: mistakes[randomKey].answer
+                };
+            } else {
+                // Normale, neue Rechnung generieren
+                const isPlus = Math.random() > 0.5;
+                let a, b, ans;
+                
+                if (isPlus) {
+                    ans = Math.floor(Math.random() * 30) + 1; 
+                    a = Math.floor(Math.random() * ans); 
+                    b = ans - a;
+                    currentProblem = { text: `${a} + ${b}`, answer: ans };
+                } else {
+                    a = Math.floor(Math.random() * 30) + 1; 
+                    b = Math.floor(Math.random() * a); 
+                    ans = a - b;
+                    currentProblem = { text: `${a} - ${b}`, answer: ans };
+                }
+            }
+            
+            document.getElementById('question').innerText = currentProblem.text + ' = ?';
+            document.getElementById('answer').value = '';
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('answer').focus();
+        }
+
+        function updateMistakesUI() {
+            const list = document.getElementById('mistakes-list');
+            list.innerHTML = '';
+            
+            // Rechnungen nach Anzahl der Fehler sortieren (häufigste zuerst)
+            let sortedMistakes = Object.keys(mistakes).sort((k1, k2) => mistakes[k2].count - mistakes[k1].count);
+            
+            if(sortedMistakes.length === 0) {
+                list.innerHTML = '<li>Alles super! Keine Fehler bisher. 🥳</li>';
+            } else {
+                sortedMistakes.forEach(key => {
+                    let li = document.createElement('li');
+                    li.innerText = `${key} (Noch ${mistakes[key].count}x üben!)`;
+                    list.appendChild(li);
+                });
+            }
+        }
+
+        function checkAnswer() {
+            const answerInput = document.getElementById('answer').value;
+            if(answerInput === '') return; 
+            
+            const userAnswer = parseInt(answerInput);
+            const body = document.body;
+            const feedback = document.getElementById('feedback');
+
+            if (userAnswer === currentProblem.answer) {
+                // RICHTIG!
+                
+                // Wenn die Rechnung in der Fehlerliste war, einen "Fehlerpunkt" abziehen
+                if (mistakes[currentProblem.text]) {
+                    mistakes[currentProblem.text].count--;
+                    if (mistakes[currentProblem.text].count <= 0) {
+                        delete mistakes[currentProblem.text]; // Ganz aus der Liste löschen
+                    }
+                    updateMistakesUI();
+                }
+
+                const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻'];
+                const randomFeedback = catsAndApplause[Math.floor(Math.random() * catsAndApplause.length)];
+                feedback.innerHTML = randomFeedback;
+                
+                setTimeout(generateProblem, 2000); 
+            } else {
+                // FALSCH!
+                
+                // Zur Fehlerliste hinzufügen oder Zähler erhöhen
+                if (!mistakes[currentProblem.text]) {
+                    mistakes[currentProblem.text] = { answer: currentProblem.answer, count: 1 };
+                } else {
+                    mistakes[currentProblem.text].count++;
+                }
+                updateMistakesUI();
+
+                body.classList.add('shake-red');
+                feedback.innerHTML = '❌'; 
+                
+                setTimeout(() => {
+                    body.classList.remove('shake-red');
+                    feedback.innerHTML = ''; 
+                }, 500); 
+                
+                document.getElementById('answer').value = '';
+                document.getElementById('answer').focus();
+            }
+        }
+
+        document.getElementById('answer').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        generateProblem();
+    </script>
+</body>
+</html>
