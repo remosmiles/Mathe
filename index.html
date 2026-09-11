@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellas Mathe-Abenteuer</title>
-    <!-- Diese Zeile lädt die Konfetti-Animation aus dem Internet -->
+    <title>Stellas Magisches Mathe-Abenteuer</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background-color: #f0f8ff; 
+            background: linear-gradient(-45deg, #f0f8ff, #e6e6fa, #fff0f5, #e0ffff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17,23 +18,41 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            transition: background-color 0.3s;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         #game-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             padding: 40px 60px;
             border-radius: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 35px rgba(147, 112, 219, 0.3), 0 0 20px rgba(255, 105, 180, 0.2);
             text-align: center;
             max-width: 500px;
             width: 100%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
         h1 {
             color: #ff69b4; 
             margin-top: 0;
             margin-bottom: 5px;
+            animation: textGlow 3s infinite alternate;
+        }
+
+        @keyframes textGlow {
+            from { text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4; }
+            to { text-shadow: 0 0 10px #fff, 0 0 20px #ff69b4, 0 0 30px #9370db; }
         }
 
         h2 {
@@ -57,32 +76,97 @@
             border-radius: 15px;
             padding: 10px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #9370db;
+            box-shadow: 0 0 15px rgba(147, 112, 219, 0.6);
+        }
+
+        button {
+            font-size: 28px;
+            background: linear-gradient(45deg, #ff69b4, #9370db);
+            color: white;
+            border: 2px solid white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(147, 112, 219, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.95);
         }
 
         #feedback {
             font-size: 70px;
-            height: 120px; /* Höhe erhöht für Bilder */
+            height: 120px; 
             margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        
-        /* Neue Klasse für Katzenbilder */
-        .feedback-cat-image {
-            max-height: 100px;
-            border-radius: 10px;
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* NEU: Das große Katzen-Overlay */
+        #cat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #cat-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 30px;
+            box-shadow: 0 0 50px rgba(255, 105, 180, 0.8), 0 0 100px rgba(147, 112, 219, 0.5);
+            animation: zoomPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomPop {
+            0% { transform: scale(0.1) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
         #mistakes-container {
             margin-top: 30px;
-            background: #fff3cd; 
+            background: rgba(255, 243, 205, 0.8); 
+            backdrop-filter: blur(5px);
             padding: 20px;
             border-radius: 15px;
             text-align: left;
             width: 100%;
             box-sizing: border-box;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid #ffeeba;
         }
 
         #mistakes-container h3 {
@@ -110,37 +194,40 @@
 
         .shake-red {
             animation: shake 0.5s;
-            background-color: #ffcccc !important; 
         }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
+            0% { transform: translate(1px, 1px) rotate(0deg); background-color: #ffe6e6; }
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
             20% { transform: translate(-3px, 0px) rotate(1deg); }
             30% { transform: translate(3px, 2px) rotate(0deg); }
             40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); background-color: #ffcccc; }
             60% { transform: translate(-3px, 1px) rotate(0deg); }
             70% { transform: translate(3px, 1px) rotate(-1deg); }
             80% { transform: translate(-1px, -1px) rotate(1deg); }
             90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); background-color: transparent; }
         }
     </style>
 </head>
 <body>
 
+    <!-- NEU: Das Element für die große Katze -->
+    <div id="cat-overlay"></div>
+
     <div id="game-container">
-        <h1>Mathe-Profi! 🐱</h1>
+        <h1>Mathe-Profi! ✨🐱✨</h1>
         <h2>Hallo Stella! 🌟 Viel Spaß beim Rechnen!</h2>
         
         <div id="question"></div>
         <input type="number" id="answer" autocomplete="off" autofocus>
         <br>
+        <button onclick="checkAnswer()">Prüfen! ✨</button>
         <div id="feedback"></div>
 
         <div id="mistakes-container">
-            <h3>Deine Trainings-Liste 🏋️‍♀️</h3>
+            <h3>Deine Trainings-Liste 🪄</h3>
             <ul id="mistakes-list">
                 <li>Alles super! Keine Fehler bisher. 🥳</li>
             </ul>
@@ -150,20 +237,33 @@
     <script>
         let currentProblem = null;
         let mistakes = {}; 
-        let correctCount = 0; // Zähler für richtige Antworten
-        let incorrectCount = 0; // Zähler für falsche Antworten
+        let correctCount = 0; 
+        let incorrectCount = 0; 
 
-        // Bildlisten (Pfade anpassen!)
-        const correctCats = ['Katze1.png', 'Katze3.png', 'Katze4.png', 'Katze5.png'];
+        // Passe hier die Endungen an (.jpg oder .png), je nachdem was du genau gespeichert hast
+        const correctCats = ['Katze1.jpg', 'Katze3.png', 'Katze4.png', 'Katze5.png'];
         const incorrectCats = ['Katze2.png', 'Katze6.png', 'Katze7.png'];
 
         function triggerConfetti() {
-            confetti({
-                particleCount: 150,
-                spread: 100,
-                origin: { y: 0.6 },
-                colors: ['#ff69b4', '#9370db', '#ffd700', '#00ff00', '#00ffff']
-            });
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              var particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
         }
 
         function generateProblem() {
@@ -194,7 +294,13 @@
             
             document.getElementById('question').innerText = currentProblem.text + ' = ?';
             document.getElementById('answer').value = '';
-            document.getElementById('feedback').innerHTML = '';
+            
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.innerHTML = '';
+            feedbackEl.style.animation = 'none';
+            feedbackEl.offsetHeight; 
+            feedbackEl.style.animation = null; 
+            
             document.getElementById('answer').focus();
         }
 
@@ -215,11 +321,17 @@
             }
         }
 
-        function showCatImage(catList) {
-            // Wählt zufällig ein Bild aus der übergebenen Liste
+        function showBigCatImage(catList) {
             const randomCat = catList[Math.floor(Math.random() * catList.length)];
-            const imgHtml = `<img src="${randomCat}" class="feedback-cat-image" alt="Belohnungs-Katze">`;
-            document.getElementById('feedback').innerHTML = imgHtml;
+            const overlay = document.getElementById('cat-overlay');
+            overlay.innerHTML = `<img src="${randomCat}" alt="Riesige Belohnungs-Katze">`;
+            overlay.style.display = 'flex'; // Overlay anzeigen
+            
+            // Versteckt das Overlay automatisch nach 2 Sekunden (wenn die neue Aufgabe kommt)
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.innerHTML = '';
+            }, 2000);
         }
 
         function checkAnswer() {
@@ -231,14 +343,12 @@
             const feedback = document.getElementById('feedback');
 
             if (userAnswer === currentProblem.answer) {
-                correctCount++; // Zähler erhöhen
+                correctCount++; 
                 
-                // Prüfen auf jede 5. richtige Antwort
                 if (correctCount % 5 === 0) {
-                    showCatImage(correctCats);
+                    showBigCatImage(correctCats);
                 } else {
-                    // Standard-Feedback (Emojis)
-                    const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻'];
+                    const catsAndApplause = ['🐱👏', '😻✨', '😸🎉', '👏👏👏', '🐈❤️', '🏆😻', '✨🪄✨'];
                     const randomFeedback = catsAndApplause[Math.floor(Math.random() * catsAndApplause.length)];
                     feedback.innerHTML = randomFeedback;
                 }
@@ -260,13 +370,11 @@
 
                 setTimeout(generateProblem, 2000); 
             } else {
-                incorrectCount++; // Zähler erhöhen
+                incorrectCount++; 
                 
-                // Prüfen auf jede 3. falsche Antwort
                 if (incorrectCount % 3 === 0) {
-                    showCatImage(incorrectCats);
+                    showBigCatImage(incorrectCats);
                 } else {
-                    // Standard-Fehler-Feedback
                     feedback.innerHTML = '❌'; 
                 }
                 
@@ -281,11 +389,18 @@
                 
                 setTimeout(() => {
                     body.classList.remove('shake-red');
-                    feedback.innerHTML = ''; 
+                    if (incorrectCount % 3 !== 0) {
+                         feedback.innerHTML = ''; 
+                    }
                 }, 500); 
                 
-                document.getElementById('answer').value = '';
-                document.getElementById('answer').focus();
+                // Falls ein Overlay gezeigt wurde, wird nach 2 Sekunden die nächste Aufgabe erzwungen
+                if (incorrectCount % 3 === 0) {
+                    setTimeout(generateProblem, 2000);
+                } else {
+                    document.getElementById('answer').value = '';
+                    document.getElementById('answer').focus();
+                }
             }
         }
 
